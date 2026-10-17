@@ -203,6 +203,53 @@ function showHideQualityFields(context, user, apiClient) {
     });
 }
 
+function loadLakeHp(context, apiClient, isSelf) {
+    const section = context.querySelector('.lakeHpSettings');
+    section.classList.add('hide');
+
+    // the settings belong to the signed-in user and this device
+    if (!isSelf) return;
+
+    apiClient.getJSON(apiClient.getUrl('LakeHp')).then(status => {
+        if (!status || (!status.HeadphonesAvailable && !status.MatrixSurroundAvailable)) return;
+
+        // offer only what the server can do, but keep a saved choice visible
+        const unavailable = {
+            Headphones: !status.HeadphonesAvailable,
+            MatrixSurround: !status.MatrixSurroundAvailable
+        };
+        const userSelect = context.querySelector('#selectLakeHpUser');
+        const deviceSelect = context.querySelector('#selectLakeHpDevice');
+        [userSelect, deviceSelect].forEach(select => {
+            Array.prototype.forEach.call(select.options, option => {
+                option.disabled = !!unavailable[option.value];
+            });
+        });
+
+        userSelect.value = status.UserMode || 'Off';
+        deviceSelect.value = status.DeviceMode || 'Default';
+        section.classList.remove('hide');
+    }).catch(() => {
+        // server without LakeHP
+    });
+}
+
+function saveLakeHp(context, apiClient) {
+    if (context.querySelector('.lakeHpSettings').classList.contains('hide')) {
+        return Promise.resolve();
+    }
+
+    return apiClient.ajax({
+        type: 'POST',
+        url: apiClient.getUrl('LakeHp'),
+        data: JSON.stringify({
+            UserMode: context.querySelector('#selectLakeHpUser').value,
+            DeviceMode: context.querySelector('#selectLakeHpDevice').value
+        }),
+        contentType: 'application/json'
+    });
+}
+
 function loadForm(context, user, userSettings, systemInfo, apiClient) {
     const loggedInUserId = apiClient.getCurrentUserId();
     const userId = user.Id;
@@ -219,6 +266,8 @@ function loadForm(context, user, userSettings, systemInfo, apiClient) {
     }
 
     context.querySelector('#selectAllowedAudioChannels').value = userSettings.allowedAudioChannels();
+
+    loadLakeHp(context, apiClient, userId === loggedInUserId);
 
     apiClient.getCultures().then(allCultures => {
         populateLanguages(context.querySelector('#selectAudioLanguage'), allCultures);
@@ -344,7 +393,8 @@ function saveUser(context, user, userSettingsInstance, apiClient) {
         userSettingsInstance.set(actionEl.id, actionEl.value, false);
     });
 
-    return apiClient.updateUserConfiguration(user.Id, user.Configuration);
+    return apiClient.updateUserConfiguration(user.Id, user.Configuration)
+        .then(() => saveLakeHp(context, apiClient));
 }
 
 function save(instance, context, userId, userSettings, apiClient, enableSaveConfirmation) {

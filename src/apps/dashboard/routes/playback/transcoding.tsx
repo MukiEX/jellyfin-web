@@ -29,6 +29,7 @@ import { queryClient } from 'utils/query/queryClient';
 import { ActionData } from 'types/actionData';
 import { CODECS, HEVC_REXT_DECODING_TYPES, HEVC_VP9_HW_DECODING_TYPES } from 'apps/dashboard/features/playback/constants/codecs';
 import SimpleAlert from 'components/SimpleAlert';
+import LakeHpSettings, { type LakeHpEncodingOptions } from 'apps/dashboard/features/playback/components/LakeHpSettings';
 
 const CONFIG_KEY = 'encoding';
 
@@ -52,7 +53,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
 export const Component = () => {
     const { data: initialConfig, isPending, isError } = useNamedConfiguration<EncodingOptions>(CONFIG_KEY);
-    const [ config, setConfig ] = useState<EncodingOptions | null>(null);
+    const [ config, setConfig ] = useState<(EncodingOptions & LakeHpEncodingOptions) | null>(null);
     const navigation = useNavigation();
     const actionData = useActionData() as ActionData | undefined;
     const submit = useSubmit();
@@ -96,6 +97,13 @@ export const Component = () => {
                 });
             }
         }
+    }, [ config ]);
+
+    const onLakeHpChange = useCallback((patch: LakeHpEncodingOptions) => {
+        setConfig({
+            ...config,
+            ...patch
+        });
     }, [ config ]);
 
     const onAlertClose = useCallback(() => {
@@ -724,6 +732,8 @@ export const Component = () => {
                                 <MenuItem value='Rfc7845'>RFC7845</MenuItem>
                                 <MenuItem value='Ac4'>AC-4</MenuItem>
                             </TextField>
+
+                            <LakeHpSettings config={config} onChange={onLakeHpChange} />
 
                             <TextField
                                 name='HlsAudioSeekStrategy'

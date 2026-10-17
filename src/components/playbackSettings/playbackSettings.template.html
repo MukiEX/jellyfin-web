@@ -30,6 +30,29 @@
             </label>
             <div class="fieldDescription checkboxFieldDescription">${DisableVbrAudioEncodingHelp}</div>
         </div>
+
+        <div class="lakeHpSettings hide">
+            <h3 class="sectionTitle">${HeaderLakeHp}</h3>
+
+            <div class="selectContainer">
+                <select is="emby-select" id="selectLakeHpUser" label="${LabelLakeHpUser}">
+                    <option value="Off">${LakeHpOutputOff}</option>
+                    <option value="Headphones">${LakeHpOutputHeadphones}</option>
+                    <option value="MatrixSurround">${LakeHpOutputMatrix}</option>
+                </select>
+                <div class="fieldDescription">${LabelLakeHpUserHelp}</div>
+            </div>
+
+            <div class="selectContainer">
+                <select is="emby-select" id="selectLakeHpDevice" label="${LabelLakeHpDevice}">
+                    <option value="Default">${LakeHpDeviceDefault}</option>
+                    <option value="Off">${LakeHpOutputOff}</option>
+                    <option value="Headphones">${LakeHpOutputHeadphones}</option>
+                    <option value="MatrixSurround">${LakeHpOutputMatrix}</option>
+                </select>
+                <div class="fieldDescription">${LabelLakeHpDeviceHelp}</div>
+            </div>
+        </div>
     </div>
 
     <div class="qualitySections hide">
